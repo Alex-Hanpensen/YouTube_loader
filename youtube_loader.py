@@ -48,8 +48,11 @@ class Loader:
 
     @link.setter
     def link(self, url_link: str) -> None:
-        self.__link = url_link if self.__is_video(url_link) or self.__is_playlist(url_link) else print(
-            'Incorrect link to a youtube video')
+        if self.__is_video(url_link) or self.__is_playlist(url_link):
+            self.__link = url_link
+        else:
+            print('Incorrect link to a youtube video')
+            exit()
 
     @property
     def path(self):
@@ -71,18 +74,29 @@ class Loader:
         if value in ('720p', '480p', '360p', '240p', '144p'):
             self.__resolution = value
 
-    def load(self) -> None:
-        video = YouTube(self.__link).streams.filter(resolution=self.__resolution)
+    def download_playlist(self) -> None:
+        playlist = Playlist(self.__link)
+        for url_link in playlist.video_urls:
+            self.download_video(url_link)
+
+    def download_video(self, url_link: str) -> None:
+        video = YouTube(url_link).streams.filter(resolution=self.__resolution)
         video.first().download(self.__path)
         print('Your video has been successfully uploaded!')
 
+    def load(self) -> None:
+        if 'playlist' in self.__link:
+            self.download_playlist()
+        else:
+            self.download_video(self.__link)
+
     @staticmethod
     def __is_playlist(link: str) -> bool | None:
-        return re.search(r'"https?://(www.)?youtube\.com/playlist\?list=\w+"gm', link)
+        return re.search(r'https?://(www.)?youtube\.com/playlist\?list=\w+', link)
 
     @staticmethod
     def __is_video(link: str) -> bool | None:
-        return re.search(r"https?://(www.)?youtube\.com/watch\?v=\w+(?:$|&list=\w+&index=\d)", link)
+        return re.search(r'https?://(www.)?youtube\.com/watch\?v=\w+(?:$|&list=\w+&index=\d)', link)
 
 
 if __name__ == '__main__':
