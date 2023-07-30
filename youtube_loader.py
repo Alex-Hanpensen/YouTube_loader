@@ -81,8 +81,8 @@ class Loader:
             self._download_video(url_link)
 
     def _download_video(self, url_link: str) -> None:
-        video = YouTube(url_link).streams.filter(resolution=self.__resolution)
-        video.first().download(self.__path)
+        video = YouTube(url_link).streams.get_by_resolution(self.resolution)
+        video.download(self.path)
         print('Your video has been successfully uploaded!')
 
     def load(self) -> None:
