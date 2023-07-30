@@ -39,8 +39,8 @@ class Loader:
 
     def __init__(self, link, path='.', resolution='720p'):
         self.link = link
-        self.__path = path
-        self.__resolution = resolution
+        self.path = path
+        self.resolution = resolution
 
     @property
     def link(self):
@@ -51,7 +51,7 @@ class Loader:
         if self.__is_video(url_link) or self.__is_playlist(url_link):
             self.__link = url_link
         else:
-            print('Incorrect link to a youtube video')
+            print('Incorrect link to a youtube video!')
             exit()
 
     @property
@@ -62,6 +62,7 @@ class Loader:
     def path(self, path):
         if not os.path.isdir(path):
             print('Unable to access the specified directory!')
+            exit()
         else:
             self.__path = path
 
@@ -74,21 +75,21 @@ class Loader:
         if value in ('720p', '480p', '360p', '240p', '144p'):
             self.__resolution = value
 
-    def download_playlist(self) -> None:
+    def _download_playlist(self) -> None:
         playlist = Playlist(self.__link)
         for url_link in playlist.video_urls:
-            self.download_video(url_link)
+            self._download_video(url_link)
 
-    def download_video(self, url_link: str) -> None:
+    def _download_video(self, url_link: str) -> None:
         video = YouTube(url_link).streams.filter(resolution=self.__resolution)
         video.first().download(self.__path)
         print('Your video has been successfully uploaded!')
 
     def load(self) -> None:
-        if 'playlist' in self.__link:
-            self.download_playlist()
-        else:
-            self.download_video(self.__link)
+        if self.__is_playlist(self.__link):
+            self._download_playlist()
+        elif self.__is_video(self.__link):
+            self._download_video(self.__link)
 
     @staticmethod
     def __is_playlist(link: str) -> bool | None:
